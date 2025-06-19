@@ -4,3 +4,4 @@ streamlit
 matplotlib
 datetime
 requests
+pyttsx3
