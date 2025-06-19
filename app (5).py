@@ -7,103 +7,77 @@ Original file is located at
     https://colab.research.google.com/drive/1trbuaUr7mmFk-GAMQBkOy2brj0LGDHnH
 """
 
-
-
 import streamlit as st
-import pandas as pd
 import requests
 from datetime import datetime
-import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Rain Prediction App 🌦️", layout="wide")
+# Set page configuration
+st.set_page_config(page_title="Rain Check ☔", layout="centered")
 
-# Custom style
+# Custom CSS for background and styles
 st.markdown("""
     <style>
-        .main {background-color: #f5f7fa;}
-        .big-font {font-size:24px !important;}
-        .card {
-            background-color: #e6f2ff;
-            padding: 1rem;
-            margin: 1rem 0;
+        body {
+            background-image: url('https://in.images.search.yahoo.com/images/view;_ylt=Awrx.HjnKVRoOogb25O9HAx.;_ylu=c2VjA3NyBHNsawNpbWcEb2lkAzdmOWI2Yjc4NTg3M2RhMTRlYjEwNjEwMjc2NWU3MmQzBGdwb3MDMTUEaXQDYmluZw--?back=https%3A%2F%2Fin.images.search.yahoo.com%2Fsearch%2Fimages%3Fp%3Draining%2Bimages%2Bhd%26type%3DE210IN826G0%26fr%3Dmcafee%26fr2%3Dpiv-web%26tab%3Dorganic%26ri%3D15&w=1920&h=1080&imgurl=getwallpapers.com%2Fwallpaper%2Ffull%2F5%2Ff%2Fe%2F1212949-raining-hd-wallpapers-1920x1080-image.jpg&rurl=https%3A%2F%2Fgetwallpapers.com%2Fcollection%2Fraining-hd-wallpapers&size=404KB&p=raining+images+hd&oid=7f9b6b785873da14eb106102765e72d3&fr2=piv-web&fr=mcafee&tt=Raining+HD+Wallpapers+%2872%2B+images%29&b=0&ni=21&no=15&ts=&tab=organic&sigr=kh2afzWKhcio&sigb=uO_zfHdF96.t&sigi=nuVQkOBn0WTg&sigt=1xZkN.elf_nz&.crumb=IzszreHrvsn&fr=mcafee&fr2=piv-web&type=E210IN826G0');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .main {
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 2rem;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3, h4 {
+            color: #002244;
+            text-align: center;
+        }
+        .emoji {
+            font-size: 26px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# App title
-st.markdown("<h1 style='text-align: center;'>🌧️ Live Weather Forecast & Rain Prediction</h1>", unsafe_allow_html=True)
+# Create a centered container
+with st.container():
+    st.markdown("<div class='main'>", unsafe_allow_html=True)
+    
+    # Title
+    st.markdown("## ☁️🌦️ **Current Rain Forecast** ⛅🌧️")
+    
+    # User input
+    API_KEY = "0a4819b28a82fa77e5437c6c156837d4"
+    city = st.text_input("🌍 Enter your city:", "Chennai")
 
-# API Key & City Input
-API_KEY = "0a4819b28a82fa77e5437c6c156837d4"
-city = st.text_input("Enter your city name 🌍", "Chennai")
+    if st.button("🔍 Check Weather Now"):
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+        response = requests.get(url)
 
-# Button to fetch weather
-if st.button("🔎 Get Weather Forecast"):
-    url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
-    response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
 
-    if response.status_code == 200:
-        data = response.json()
-        forecast_data = []
+            # Extract current weather data
+            temp = data["main"]["temp"]
+            humidity = data["main"]["humidity"]
+            wind = data["wind"]["speed"]
+            weather = data["weather"][0]["description"]
+            dt = datetime.fromtimestamp(data["dt"]).strftime("%A, %d %b %Y %I:%M %p")
 
-        for item in data["list"]:
-            forecast = {
-                "datetime": datetime.fromtimestamp(item["dt"]),
-                "temperature": item["main"]["temp"],
-                "humidity": item["main"]["humidity"],
-                "wind_speed": item["wind"]["speed"],
-                "weather": item["weather"][0]["description"]
-            }
-            forecast_data.append(forecast)
+            # Rain prediction
+            rain_expected = "🌧️ **Rain Expected**" if "rain" in weather.lower() else "🌤️ **No Rain**"
 
-        df = pd.DataFrame(forecast_data)
+            # Output
+            st.markdown(f"### 📍 **{city.title()}** — *{dt}*")
+            st.markdown(f"#### 🌡️ Temperature: **{temp}°C**")
+            st.markdown(f"#### 💧 Humidity: **{humidity}%**")
+            st.markdown(f"#### 🌬️ Wind Speed: **{wind} m/s**")
+            st.markdown(f"#### 🌀 Condition: **{weather.title()}**")
+            st.markdown(f"### ⏱️ Prediction Now: {rain_expected}")
 
-        # Plot: Temperature
-        st.markdown("### 🌡️ Temperature Trend")
-        plt.figure(figsize=(10, 4))
-        plt.plot(df["datetime"], df["temperature"], marker='o', color='blue')
-        plt.xticks(rotation=45)
-        plt.xlabel("Date Time")
-        plt.ylabel("Temperature (°C)")
-        plt.tight_layout()
-        st.pyplot(plt)
+        else:
+            st.error("❌ Could not find the city. Please check the spelling.")
 
-        # Plot: Humidity
-        st.markdown("### 💧 Humidity Trend")
-        plt.figure(figsize=(10, 4))
-        plt.plot(df["datetime"], df["humidity"], marker='s', color='green')
-        plt.xticks(rotation=45)
-        plt.xlabel("Date Time")
-        plt.ylabel("Humidity (%)")
-        plt.tight_layout()
-        st.pyplot(plt)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-        # Plot: Wind Speed
-        st.markdown("### 🌬️ Wind Speed Trend")
-        plt.figure(figsize=(10, 4))
-        plt.plot(df["datetime"], df["wind_speed"], marker='^', color='red')
-        plt.xticks(rotation=45)
-        plt.xlabel("Date Time")
-        plt.ylabel("Wind Speed (m/s)")
-        plt.tight_layout()
-        st.pyplot(plt)
 
-        # Rain Prediction Display
-        st.markdown("### ☔ Rain Prediction")
-        df['Rain_Predicted'] = df['weather'].str.contains("rain", case=False)
 
-        for i in range(0, len(df), 3):  # show every 3-hour block
-            sub_df = df.iloc[i]
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown(f"<div class='card'><b>{sub_df['datetime'].strftime('%a %I:%M %p')}</b></div>", unsafe_allow_html=True)
-            with col2:
-                st.markdown(f"<div class='card'>Weather: <b>{sub_df['weather'].capitalize()}</b></div>", unsafe_allow_html=True)
-            with col3:
-                rain_status = "🌧️ Rain Expected" if sub_df['Rain_Predicted'] else "🌤️ No Rain"
-                st.markdown(f"<div class='card'><b>{rain_status}</b></div>", unsafe_allow_html=True)
-
-    else:
-        st.error("Failed to fetch data. Please check the city name or API key.")
