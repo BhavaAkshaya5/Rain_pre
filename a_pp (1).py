@@ -40,7 +40,7 @@ if city and st.button("🔍 Check Weather Now"):
     # ...
 
 # Reinstall streamlit just before importing to ensure it's available in this environment
-!pip install streamlit
+
 import streamlit as st
 import openai  # or any LLM SDK you prefer
 
