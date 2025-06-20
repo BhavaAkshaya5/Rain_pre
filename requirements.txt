@@ -5,3 +5,5 @@ matplotlib
 datetime
 requests
 pyttsx3
+openai
+openai>=0.25.0 
