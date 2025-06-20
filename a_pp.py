@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1YSE4ADaA9_WjtShhhIDkDB6i-oWSX6WO
 """
 
-!pip install streamlit
-
 import streamlit as st
 import requests
 from datetime import datetime
